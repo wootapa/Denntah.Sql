@@ -12,9 +12,9 @@
     <RepositoryUrl>https://github.com/wootapa/Denntah.Sql</RepositoryUrl>
     <RepositoryType>Git</RepositoryType>
     <PackageTags>mapper,orm,database,sql</PackageTags>
-    <PackageReleaseNotes>Included XML documentation. Added Get&lt;T&gt;(id) method.</PackageReleaseNotes>
+    <PackageReleaseNotes>InsertIfMissing, Upsert. Bulk. Target .NET Standard 2.0</PackageReleaseNotes>
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
-    <Version>1.0.5</Version>
+    <Version>1.0.6</Version>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
