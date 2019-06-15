@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <PackageId>Denntah.Sql.ForkWA</PackageId>
-    <TargetFramework>netcoreapp2.0</TargetFramework>
+    <TargetFramework>netstandard2.0</TargetFramework>
     <Authors>denntah</Authors>
     <Company />
     <Description>Database mapper that simplifies all kind of database communication. Currently just supports PostgreSQL.</Description>
@@ -20,5 +20,9 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <DocumentationFile>bin\Release\netcoreapp2.0\Denntah.Sql.xml</DocumentationFile>
   </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="System.ComponentModel.Annotations" Version="4.5.0" />
+  </ItemGroup>
 
 </Project>
