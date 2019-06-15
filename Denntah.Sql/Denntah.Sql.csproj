@@ -1,6 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
+    <PackageId>Denntah.Sql.ForkWA</PackageId>
     <TargetFramework>netcoreapp2.0</TargetFramework>
     <Authors>denntah</Authors>
     <Company />
@@ -8,12 +9,12 @@
     <Copyright>2018 Dennis "denntah" Ahlquist</Copyright>
     <PackageLicenseUrl>https://github.com/denntah/Denntah.Sql/blob/master/LICENSE</PackageLicenseUrl>
     <PackageProjectUrl>https://github.com/denntah/Denntah.Sql</PackageProjectUrl>
-    <RepositoryUrl>https://github.com/denntah/Denntah.Sql</RepositoryUrl>
+    <RepositoryUrl>https://github.com/wootapa/Denntah.Sql</RepositoryUrl>
     <RepositoryType>Git</RepositoryType>
     <PackageTags>mapper,orm,database,sql</PackageTags>
     <PackageReleaseNotes>Included XML documentation. Added Get&lt;T&gt;(id) method.</PackageReleaseNotes>
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
-    <Version>1.0.3</Version>
+    <Version>1.0.5</Version>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
