@@ -177,7 +177,7 @@ namespace Denntah.Sql
             IEnumerable<PropertyDescriber> keys = td.Keys;
 
             if (keys.Count() > 0)
-                return conn.Update(td.Table, data, string.Join(",", keys.Select(x => x.DbName + "=@" + x.Property.Name)), transaction);
+                return conn.Update(td.Table, data, string.Join(",", keys.Select(x => x.DbName + "=@" + x.Property.Name)), null, transaction);
             else
                 throw new ArgumentException("Invalid object. Atleast one property must be marked with KeyAttribute on type " + data.GetType().Name);
         }
