@@ -59,9 +59,6 @@ namespace Denntah.Sql
             {
                 var value = typeDescriber.GetValue(property.Property.Name, args);
 
-                if (property.Property.PropertyType.IsEnum)
-                    value = value.ToString();
-
                 cmd.ApplyParameter(property.Property.Name, value ?? DBNull.Value);
             }
         }
@@ -83,9 +80,6 @@ namespace Denntah.Sql
                 foreach (var property in typeDescriber.Arguments)
                 {
                     var value = typeDescriber.GetValue(property.Property.Name, args);
-
-                    if (property.Property.PropertyType.IsEnum)
-                        value = value.ToString();
 
                     cmd.ApplyParameter(property.Property.Name + i, value ?? DBNull.Value);
                 }
