@@ -13,8 +13,8 @@
     <RepositoryType>Git</RepositoryType>
     <PackageTags>mapper,orm,database,sql</PackageTags>
     <PackageReleaseNotes>InsertIfMissing, Upsert. Bulk. Target .NET Standard 2.0</PackageReleaseNotes>
-    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
-    <Version>1.0.7</Version>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Version>1.0.8</Version>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
