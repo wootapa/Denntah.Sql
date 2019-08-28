@@ -1,5 +1,5 @@
 # .NET Database Wrapper
-Extension for IDbConnection that simplifies database communication. Currently just support PostgreSQL.
+Extension for DbConnection that simplifies database communication. Currently just support PostgreSQL.
 
 
 
@@ -38,7 +38,7 @@ public class Car
 }
 ```
 
-Querying database and map to model, assuming ```c``` is of type ```IDbConnection```:
+Querying database and map to model, assuming ```c``` is of type ```DbConnection```:
 ```
 Person[] persons = c.Query<Person>("SELECT * FROM persons").ToArray();
 ```
@@ -50,7 +50,7 @@ Quite simple, right? Check out more examples below. Don't forget to read the "Im
 
 
 ## Examples
-Examples below will assume that ```c``` is of type ```IDbConnection```.
+Examples below will assume that ```c``` is of type ```DbConnection```.
 
 ### Basic query
 a list of the given type

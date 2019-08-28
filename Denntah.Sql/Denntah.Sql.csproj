@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <PackageId>Denntah.Sql.ForkWA</PackageId>
@@ -14,7 +14,7 @@
     <PackageTags>mapper,orm,database,sql</PackageTags>
     <PackageReleaseNotes>InsertIfMissing, Upsert. Bulk. Target .NET Standard 2.0</PackageReleaseNotes>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Version>1.0.9</Version>
+    <Version>1.1.0</Version>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">

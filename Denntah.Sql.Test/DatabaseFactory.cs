@@ -1,24 +1,50 @@
 ﻿using System;
+using System.Threading.Tasks;
+using Denntah.Sql.Test.Models;
 using Npgsql;
 
 namespace Denntah.Sql.Test
 {
     public class DatabaseFactory
     {
-        public static NpgsqlConnection Connect()
+        public static NpgsqlConnection Connect(bool mapEnums = true)
         {
-            var conn = new NpgsqlConnection("Host=localhost;Port=5432;Database=test;User ID=postgres;Password=postgres;");
-
+            var conn = new NpgsqlConnection("Host=localhost;Port=5432;Database=denntahsqltest;User ID=denntahsqltest;Password=denntahsqltest;");
+            conn.Open();
+            if (mapEnums)
+            {
+                conn.MapEnum<Gender>("gender");
+            }
             int timeZoneOffset = TimeZoneInfo.Local.GetUtcOffset(DateTime.UtcNow).Hours;
             conn.Execute($"SET TIME ZONE {timeZoneOffset}");
+
+            return conn;
+        }
+        public static async Task<NpgsqlConnection> ConnectAsync(bool mapEnums = true)
+        {
+            var conn = new NpgsqlConnection("Host=localhost;Port=5432;Database=denntahsqltest;User ID=denntahsqltest;Password=denntahsqltest;");
+            await conn.OpenAsync().ConfigureAwait(false);
+            if (mapEnums)
+            {
+                conn.MapEnum<Gender>("gender");
+            }
+            int timeZoneOffset = TimeZoneInfo.Local.GetUtcOffset(DateTime.UtcNow).Hours;
+            await conn.ExecuteAsync($"SET TIME ZONE {timeZoneOffset}").ConfigureAwait(false);
 
             return conn;
         }
 
         public static void CreatePostgres()
         {
-            using (var connection = Connect())
+            using (var connection = Connect(false))
             {
+
+                if (!connection.Scalar<bool?>("SELECT true FROM pg_type WHERE typname = 'gender'").GetValueOrDefault())
+                {
+                    connection.Execute(@"CREATE TYPE gender AS ENUM ('unknown', 'male', 'female');");
+                    connection.ReloadTypes();
+                }
+
                 connection.Execute(@"
                     CREATE TABLE IF NOT EXISTS persons
                     (
@@ -26,7 +52,7 @@ namespace Denntah.Sql.Test
                       first_name text,
                       last_name text,
                       age integer,
-                      gender text,
+                      gender gender,
                       date_created timestamptz DEFAULT NOW(),
                       CONSTRAINT persons_pk PRIMARY KEY (id)
                     )");
