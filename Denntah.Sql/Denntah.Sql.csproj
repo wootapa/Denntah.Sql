@@ -1,23 +1,28 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp2.0</TargetFramework>
+    <PackageId>Denntah.Sql.ForkWA</PackageId>
+    <TargetFramework>netstandard2.0</TargetFramework>
     <Authors>denntah</Authors>
     <Company />
     <Description>Database mapper that simplifies all kind of database communication. Currently just supports PostgreSQL.</Description>
     <Copyright>2018 Dennis "denntah" Ahlquist</Copyright>
     <PackageLicenseUrl>https://github.com/denntah/Denntah.Sql/blob/master/LICENSE</PackageLicenseUrl>
     <PackageProjectUrl>https://github.com/denntah/Denntah.Sql</PackageProjectUrl>
-    <RepositoryUrl>https://github.com/denntah/Denntah.Sql</RepositoryUrl>
+    <RepositoryUrl>https://github.com/wootapa/Denntah.Sql</RepositoryUrl>
     <RepositoryType>Git</RepositoryType>
     <PackageTags>mapper,orm,database,sql</PackageTags>
-    <PackageReleaseNotes>Included XML documentation. Added Get&lt;T&gt;(id) method.</PackageReleaseNotes>
-    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
-    <Version>1.0.3</Version>
+    <PackageReleaseNotes>InsertIfMissing, Upsert. Bulk. Target .NET Standard 2.0</PackageReleaseNotes>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Version>1.1.0</Version>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <DocumentationFile>bin\Release\netcoreapp2.0\Denntah.Sql.xml</DocumentationFile>
   </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="System.ComponentModel.Annotations" Version="4.5.0" />
+  </ItemGroup>
 
 </Project>
