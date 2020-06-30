@@ -5,10 +5,11 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <LangVersion>latest</LangVersion>
     <Authors>denntah</Authors>
+    <NoWarn>$(NoWarn);1591</NoWarn>
     <Company />
     <Description>Database mapper that simplifies all kind of database communication. Currently just supports PostgreSQL.</Description>
     <Copyright>2018 Dennis "denntah" Ahlquist</Copyright>
-    <PackageLicenseUrl>https://github.com/denntah/Denntah.Sql/blob/master/LICENSE</PackageLicenseUrl>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/denntah/Denntah.Sql</PackageProjectUrl>
     <RepositoryUrl>https://github.com/wootapa/Denntah.Sql</RepositoryUrl>
     <RepositoryType>Git</RepositoryType>
