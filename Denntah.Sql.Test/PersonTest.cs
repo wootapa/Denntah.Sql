@@ -74,7 +74,7 @@ namespace Denntah.Sql.Test
             _data.Age = 2000;
             _db.Upsert("persons", _data, "id");
 
-            Person person = (await _db.QueryAsync<Person>("SELECT * FROM persons WHERE id=@Id", _data).ConfigureAwait(false)).FirstOrDefault();
+            Person person = (await _db.QueryAsync<Person>("SELECT * FROM persons WHERE id=@Id", _data).FirstOrDefaultAsync().ConfigureAwait(false));
 
             Assert.NotNull(person);
             Assert.Equal(_data.Id, person.Id);
@@ -107,7 +107,7 @@ namespace Denntah.Sql.Test
 
             int affected = await _db.UpdateAsync("persons", _data, "id=@Id").ConfigureAwait(false);
 
-            Person updated = (await _db.QueryAsync<Person>("SELECT * FROM persons WHERE id=@Id", _data).ConfigureAwait(false)).FirstOrDefault();
+            Person updated = (await _db.QueryAsync<Person>("SELECT * FROM persons WHERE id=@Id", _data).FirstOrDefaultAsync().ConfigureAwait(false));
 
             Assert.NotNull(updated);
             Assert.Equal("Baz", updated.FirstName);
@@ -154,7 +154,7 @@ namespace Denntah.Sql.Test
         {
             _data.Id = await _db.InsertAsync<int>("persons", _data, "id").ConfigureAwait(false);
 
-            Person person = (await _db.QueryAsync<Person>("SELECT * FROM persons WHERE id=@Id", _data).ConfigureAwait(false)).FirstOrDefault();
+            Person person = (await _db.QueryAsync<Person>("SELECT * FROM persons WHERE id=@Id", _data).FirstOrDefaultAsync().ConfigureAwait(false));
 
             Assert.NotNull(person);
             Assert.Equal(_data.Id, person.Id);
@@ -184,7 +184,7 @@ namespace Denntah.Sql.Test
         {
             _data.Id = await _db.InsertAsync<int>("persons", _data, "id").ConfigureAwait(false);
 
-            var person = (await _db.QueryAssocAsync("SELECT * FROM persons WHERE id=@Id", _data).ConfigureAwait(false)).FirstOrDefault();
+            var person = (await _db.QueryAssocAsync("SELECT * FROM persons WHERE id=@Id", _data).FirstOrDefaultAsync().ConfigureAwait(false));
 
             Assert.NotNull(person);
             Assert.Equal(_data.Id, int.Parse(person["id"].ToString()));
@@ -214,7 +214,7 @@ namespace Denntah.Sql.Test
         {
             _data.Id = await _db.InsertAsync<int>("persons", _data, "id").ConfigureAwait(false);
 
-            var person = (await _db.QueryArrayAsync("SELECT id,first_name,age,gender,date_created FROM persons WHERE id=@Id", _data).ConfigureAwait(false)).FirstOrDefault();
+            var person = (await _db.QueryArrayAsync("SELECT id,first_name,age,gender,date_created FROM persons WHERE id=@Id", _data).FirstOrDefaultAsync().ConfigureAwait(false));
 
             Assert.NotNull(person);
             Assert.Equal(_data.Id, int.Parse(person[0].ToString()));

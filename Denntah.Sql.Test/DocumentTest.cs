@@ -114,7 +114,7 @@ namespace Denntah.Sql.Test
         {
             await _db.InsertAsync("document", _data).ConfigureAwait(false);
 
-            Document doc = (await _db.QueryAsync<Document>("SELECT * FROM document WHERE id=@Id", _data).ConfigureAwait(false)).FirstOrDefault();
+            Document doc = (await _db.QueryAsync<Document>("SELECT * FROM document WHERE id=@Id", _data).FirstOrDefaultAsync().ConfigureAwait(false));
 
             Assert.NotNull(doc);
             Assert.Equal(_data.Id, doc.Id);
@@ -142,7 +142,7 @@ namespace Denntah.Sql.Test
         {
             _db.Insert("document", _data);
 
-            var doc = (await _db.QueryAssocAsync("SELECT * FROM document WHERE id=@Id", _data).ConfigureAwait(false)).FirstOrDefault();
+            var doc = (await _db.QueryAssocAsync("SELECT * FROM document WHERE id=@Id", _data).FirstOrDefaultAsync().ConfigureAwait(false));
 
             Assert.NotNull(doc);
             Assert.Equal(_data.Id, doc["id"]);
@@ -170,7 +170,7 @@ namespace Denntah.Sql.Test
         {
             await _db.InsertAsync("document", _data).ConfigureAwait(false);
 
-            var doc = (await _db.QueryArrayAsync("SELECT id,name,data,date_created FROM document WHERE id=@Id", _data).ConfigureAwait(false)).FirstOrDefault();
+            var doc = (await _db.QueryArrayAsync("SELECT id,name,data,date_created FROM document WHERE id=@Id", _data).FirstOrDefaultAsync().ConfigureAwait(false));
 
             Assert.NotNull(doc);
             Assert.Equal(_data.Id, doc[0]);

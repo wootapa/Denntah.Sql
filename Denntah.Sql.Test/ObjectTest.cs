@@ -27,28 +27,6 @@ namespace Denntah.Sql.Test
         }
 
         [Fact]
-        public void GetByMultipleIds()
-        {
-            int parentId = 1;
-            int childId = 2;
-            ParentChild parentChild = null;
-
-            using (var db = DatabaseFactory.CreatePostgres())
-            {
-                parentChild = db.Get<ParentChild>(parentId, childId);
-                if (parentChild == null)
-                {
-                    db.Insert(new ParentChild { ParentId = parentId, ChildId = childId });
-                    parentChild = db.Get<ParentChild>(parentId, childId);
-                }
-            }
-
-            Assert.NotNull(parentChild);
-            Assert.Equal(parentId, parentChild.ParentId);
-            Assert.Equal(childId, parentChild.ChildId);
-        }
-
-        [Fact]
         public void GetObjectWithoutKey()
         {
             using (var db = DatabaseFactory.Connect())
@@ -192,7 +170,7 @@ namespace Denntah.Sql.Test
 
                 affected = await db.UpdateAsync(person).ConfigureAwait(false);
 
-                person = (await db.QueryAsync<Person>("SELECT * FROM persons WHERE id=@Id", person).ConfigureAwait(false)).FirstOrDefault();
+                person = (await db.QueryAsync<Person>("SELECT * FROM persons WHERE id=@Id", person).FirstOrDefaultAsync().ConfigureAwait(false));
             }
 
             Assert.True(affected == 1);

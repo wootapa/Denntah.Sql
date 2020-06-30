@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
 using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using Denntah.Sql.Reflection;
 
 namespace Denntah.Sql
@@ -14,44 +12,6 @@ namespace Denntah.Sql
     /// </summary>
     internal static class CommandExtension
     {
-        /// <summary>
-        /// Prepares a command and makes sure connection is open
-        /// </summary>
-        /// <param name="conn">A connection</param>
-        /// <param name="sql">SQL-command to be executed</param>
-        /// <param name="transaction">Transaction to associate with the command</param>
-        /// <returns>The created command</returns>
-        public static DbCommand Prepare(this DbConnection conn, string sql, DbTransaction transaction = null)
-        {
-            DbCommand cmd = conn.CreateCommand();
-            cmd.CommandText = sql;
-            cmd.Transaction = transaction;
-
-            if (conn.State == ConnectionState.Closed)
-                conn.Open();
-
-            return cmd;
-        }
-
-        /// <summary>
-        /// Prepares a command and makes sure connection is open
-        /// </summary>
-        /// <param name="conn">A connection</param>
-        /// <param name="sql">SQL-command to be executed</param>
-        /// <param name="transaction">Transaction to associate with the command</param>
-        /// <returns>The created command</returns>
-        public static async Task<DbCommand> PrepareAsync(this DbConnection conn, string sql, DbTransaction transaction = null, CancellationToken cancellationToken = default)
-        {
-            DbCommand cmd = conn.CreateCommand();
-            cmd.CommandText = sql;
-            cmd.Transaction = transaction;
-
-            if (conn.State == ConnectionState.Closed)
-                await conn.OpenAsync(cancellationToken).ConfigureAwait(false);
-
-            return cmd;
-        }
-
         /// <summary>
         /// Add parameter to a command
         /// </summary>
@@ -75,12 +35,11 @@ namespace Denntah.Sql
         {
             if (args == null) return;
 
-            var typeDescriber = TypeHandler.Get(args);
+            var td = TypeHandler.Get(args);
 
-            foreach (var property in typeDescriber.Arguments)
+            foreach (var property in td.Arguments)
             {
-                var value = typeDescriber.GetValue(property.Property.Name, args);
-
+                var value = td.GetValue(property.Property.Name, args);
                 cmd.ApplyParameter(property.Property.Name, value ?? DBNull.Value);
             }
         }
@@ -94,15 +53,14 @@ namespace Denntah.Sql
         {
             if (argsList == null) return;
 
-            var typeDescriber = TypeHandler.Get(argsList.First());
+            var td = TypeHandler.Get(argsList.First());
 
             int i = 0;
             foreach (var args in argsList)
             {
-                foreach (var property in typeDescriber.Arguments)
+                foreach (var property in td.Arguments)
                 {
-                    var value = typeDescriber.GetValue(property.Property.Name, args);
-
+                    var value = td.GetValue(property.Property.Name, args);
                     cmd.ApplyParameter(property.Property.Name + i, value ?? DBNull.Value);
                 }
                 i++;
