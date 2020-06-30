@@ -13,7 +13,7 @@ namespace Denntah.Sql.Test
             conn.Open();
             if (mapEnums)
             {
-                conn.MapEnum<Gender>("gender");
+                conn.TypeMapper.MapEnum<Gender>("gender");
             }
             int timeZoneOffset = TimeZoneInfo.Local.GetUtcOffset(DateTime.UtcNow).Hours;
             conn.Execute($"SET TIME ZONE {timeZoneOffset}");
@@ -26,7 +26,7 @@ namespace Denntah.Sql.Test
             await conn.OpenAsync().ConfigureAwait(false);
             if (mapEnums)
             {
-                conn.MapEnum<Gender>("gender");
+                conn.TypeMapper.MapEnum<Gender>("gender");
             }
             int timeZoneOffset = TimeZoneInfo.Local.GetUtcOffset(DateTime.UtcNow).Hours;
             await conn.ExecuteAsync($"SET TIME ZONE {timeZoneOffset}").ConfigureAwait(false);

@@ -3,6 +3,7 @@
   <PropertyGroup>
     <PackageId>Denntah.Sql.ForkWA</PackageId>
     <TargetFramework>netstandard2.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
     <Authors>denntah</Authors>
     <Company />
     <Description>Database mapper that simplifies all kind of database communication. Currently just supports PostgreSQL.</Description>
@@ -12,9 +13,9 @@
     <RepositoryUrl>https://github.com/wootapa/Denntah.Sql</RepositoryUrl>
     <RepositoryType>Git</RepositoryType>
     <PackageTags>mapper,orm,database,sql</PackageTags>
-    <PackageReleaseNotes>InsertIfMissing, Upsert. Bulk. Target .NET Standard 2.0</PackageReleaseNotes>
+    <PackageReleaseNotes>Return IAsyncEnumerable for async queries</PackageReleaseNotes>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Version>1.1.0</Version>
+    <Version>1.2.0</Version>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
@@ -22,7 +23,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="System.ComponentModel.Annotations" Version="4.5.0" />
+    <PackageReference Include="System.ComponentModel.Annotations" Version="4.7.0" />
+    <PackageReference Include="System.Linq.Async" Version="4.1.1" />
+    <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="1.1.1" />
   </ItemGroup>
 
 </Project>

@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Data.Common;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Denntah.Sql.Reflection;
@@ -14,6 +16,48 @@ namespace Denntah.Sql
     public static class ConnectionExtension
     {
         /// <summary>
+        /// Prepares a command and makes sure connection is open
+        /// </summary>
+        /// <param name="conn">A connection</param>
+        /// <param name="sql">SQL-command to be executed</param>
+        /// <param name="transaction">Transaction to associate with the command</param>
+        /// <returns>The created command</returns>
+        public static DbCommand Prepare(this DbConnection conn, string sql, DbTransaction transaction = null)
+        {
+            DbCommand cmd = conn.CreateCommand();
+            cmd.CommandText = sql;
+            cmd.Transaction = transaction;
+
+            if (conn.State == ConnectionState.Closed)
+            {
+                conn.Open();
+            }
+
+            return cmd;
+        }
+
+        /// <summary>
+        /// Prepares a command and makes sure connection is open
+        /// </summary>
+        /// <param name="conn">A connection</param>
+        /// <param name="sql">SQL-command to be executed</param>
+        /// <param name="transaction">Transaction to associate with the command</param>
+        /// <returns>The created command</returns>
+        public static async Task<DbCommand> PrepareAsync(this DbConnection conn, string sql, DbTransaction transaction = null, CancellationToken cancellationToken = default)
+        {
+            DbCommand cmd = conn.CreateCommand();
+            cmd.CommandText = sql;
+            cmd.Transaction = transaction;
+
+            if (conn.State == ConnectionState.Closed)
+            {
+                await conn.OpenAsync(cancellationToken).ConfigureAwait(false);
+            }
+
+            return cmd;
+        }
+
+        /// <summary>
         /// Read data from database
         /// </summary>
         /// <typeparam name="T">class to map data to</typeparam>
@@ -21,7 +65,7 @@ namespace Denntah.Sql
         /// <param name="sql">SQL-statement to be executed</param>
         /// <param name="args">Arguments to apply on SQL-statement</param>
         /// <param name="transaction">Transaction to associate with the command</param>
-        /// <returns>List of T</returns>
+        /// <returns>IEnumerable of T</returns>
         public static IEnumerable<T> Query<T>(this DbConnection conn, string sql, object args = null, DbTransaction transaction = null) where T : new()
         {
             DbCommand cmd = conn.Prepare(sql, transaction);
@@ -38,13 +82,16 @@ namespace Denntah.Sql
         /// <param name="sql">SQL-statement to be executed</param>
         /// <param name="args">Arguments to apply on SQL-statement</param>
         /// <param name="transaction">Transaction to associate with the command</param>
-        /// <returns>List of T</returns>
-        public static async Task<IEnumerable<T>> QueryAsync<T>(this DbConnection conn, string sql, object args = null, DbTransaction transaction = null, CancellationToken cancellationToken = default) where T : new()
+        /// <returns>IAsyncEnumerable of T</returns>
+        public static async IAsyncEnumerable<T> QueryAsync<T>(this DbConnection conn, string sql, object args = null, DbTransaction transaction = null, [EnumeratorCancellation] CancellationToken cancellationToken = default) where T : new()
         {
             DbCommand cmd = await conn.PrepareAsync(sql, transaction, cancellationToken).ConfigureAwait(false);
             cmd.ApplyParameters(args);
 
-            return await conn.QueryAsync<T>(cmd, cancellationToken).ConfigureAwait(false);
+            await foreach (var result in conn.QueryAsync<T>(cmd, cancellationToken).ConfigureAwait(false))
+            {
+                yield return result;
+            }
         }
 
         /// <summary>
@@ -53,27 +100,20 @@ namespace Denntah.Sql
         /// <typeparam name="T">class to map data to</typeparam>
         /// <param name="conn">A connection</param>
         /// <param name="cmd">Command to be executed</param>
-        /// <returns>List of T</returns>
+        /// <returns>IEnumerable of T</returns>
         public static IEnumerable<T> Query<T>(this DbConnection conn, DbCommand cmd) where T : new()
         {
             using (var reader = cmd.ExecuteReader())
             {
-                List<string> columns = new List<string>();
-
-                for (int i = 0; i < reader.FieldCount; i++)
-                    columns.Add(reader.GetName(i));
-
                 var td = TypeHandler.Get<T>();
 
                 while (reader.Read())
                 {
                     var result = new T();
 
-                    for (var i = 0; i < columns.Count; i++)
+                    for (var i = 0; i < reader.FieldCount; i++)
                     {
-                        object value = reader[columns[i]];
-
-                        td.SetValue(columns[i], result, value is DBNull ? null : value);
+                        td.SetValue(reader.GetName(i), result, reader.GetValueWithNull(i));
                     }
 
                     yield return result;
@@ -87,33 +127,25 @@ namespace Denntah.Sql
         /// <typeparam name="T">class to map data to</typeparam>
         /// <param name="conn">A connection</param>
         /// <param name="cmd">Command to be executed</param>
-        /// <returns>List of T</returns>
-        public static async Task<IEnumerable<T>> QueryAsync<T>(this DbConnection conn, DbCommand cmd, CancellationToken cancellationToken = default) where T : new()
+        /// <returns>IAsyncEnumerable of T</returns>
+        public static async IAsyncEnumerable<T> QueryAsync<T>(this DbConnection conn, DbCommand cmd, [EnumeratorCancellation] CancellationToken cancellationToken = default) where T : new()
         {
-            var entites = new List<T>();
             using (var reader = await cmd.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false))
             {
-                List<string> columns = new List<string>();
-
-                for (int i = 0; i < reader.FieldCount; i++)
-                    columns.Add(reader.GetName(i));
-
                 var td = TypeHandler.Get<T>();
 
                 while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
                 {
                     var result = new T();
 
-                    for (var i = 0; i < columns.Count; i++)
+                    for (var i = 0; i < reader.FieldCount; i++)
                     {
-                        object value = reader[columns[i]];
-
-                        td.SetValue(columns[i], result, value is DBNull ? null : value);
+                        td.SetValue(reader.GetName(i), result, reader.GetValueWithNull(i));
                     }
-                    entites.Add(result);
+
+                    yield return result;
                 }
             }
-            return entites;
         }
 
         /// <summary>
@@ -123,7 +155,7 @@ namespace Denntah.Sql
         /// <param name="sql">SQL-statement to be executed</param>
         /// <param name="args">Arguments to apply on SQL-statement</param>
         /// <param name="transaction">Transaction to associate with the command</param>
-        /// <returns>List of array of object</returns>
+        /// <returns>IEnumerable of array of object</returns>
         public static IEnumerable<object[]> QueryArray(this DbConnection conn, string sql, object args = null, DbTransaction transaction = null)
         {
             DbCommand cmd = conn.Prepare(sql, transaction);
@@ -136,7 +168,9 @@ namespace Denntah.Sql
                     object[] result = new object[reader.FieldCount];
 
                     for (var i = 0; i < reader.FieldCount; i++)
-                        result[i] = reader[i] is DBNull ? null : reader[i];
+                    {
+                        result[i] = reader.GetValueWithNull(i);
+                    }
 
                     yield return result;
                 }
@@ -150,12 +184,12 @@ namespace Denntah.Sql
         /// <param name="sql">SQL-statement to be executed</param>
         /// <param name="args">Arguments to apply on SQL-statement</param>
         /// <param name="transaction">Transaction to associate with the command</param>
-        /// <returns>List of array of object</returns>
-        public static async Task<IEnumerable<object[]>> QueryArrayAsync(this DbConnection conn, string sql, object args = null, DbTransaction transaction = null, CancellationToken cancellationToken = default)
+        /// <returns>IAsyncEnumerable of array of object</returns>
+        public static async IAsyncEnumerable<object[]> QueryArrayAsync(this DbConnection conn, string sql, object args = null, DbTransaction transaction = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
         {
             DbCommand cmd = await conn.PrepareAsync(sql, transaction, cancellationToken).ConfigureAwait(false);
             cmd.ApplyParameters(args);
-            var items = new List<object[]>();
+
             using (var reader = await cmd.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false))
             {
                 while (reader.Read())
@@ -163,40 +197,9 @@ namespace Denntah.Sql
                     object[] result = new object[reader.FieldCount];
 
                     for (var i = 0; i < reader.FieldCount; i++)
-                        result[i] = reader[i] is DBNull ? null : reader[i];
-
-                    items.Add(result);
-                }
-            }
-            return items;
-        }
-
-        /// <summary>
-        /// Read data from database
-        /// </summary>
-        /// <param name="conn">A connection</param>
-        /// <param name="sql">SQL-statement to be executed</param>
-        /// <param name="args">Arguments to apply on SQL-statement</param>
-        /// <param name="transaction">Transaction to associate with the command</param>
-        /// <returns>List of dictionary, where key is column name</returns>
-        public static IEnumerable<IDictionary<string, object>> QueryAssoc(this DbConnection conn, string sql, object args = null, DbTransaction transaction = null)
-        {
-            DbCommand cmd = conn.Prepare(sql, transaction);
-            cmd.ApplyParameters(args);
-
-            using (var reader = cmd.ExecuteReader())
-            {
-                List<string> columns = new List<string>();
-
-                for (int i = 0; i < reader.FieldCount; i++)
-                    columns.Add(reader.GetName(i));
-
-                while (reader.Read())
-                {
-                    Dictionary<string, object> result = new Dictionary<string, object>();
-
-                    for (var i = 0; i < reader.FieldCount; i++)
-                        result[columns[i]] = reader[i] is DBNull ? null : reader[i];
+                    {
+                        result[i] = reader.GetValueWithNull(i);
+                    }
 
                     yield return result;
                 }
@@ -210,30 +213,55 @@ namespace Denntah.Sql
         /// <param name="sql">SQL-statement to be executed</param>
         /// <param name="args">Arguments to apply on SQL-statement</param>
         /// <param name="transaction">Transaction to associate with the command</param>
-        /// <returns>List of dictionary, where key is column name</returns>
-        public static async Task<IEnumerable<IDictionary<string, object>>> QueryAssocAsync(this DbConnection conn, string sql, object args = null, DbTransaction transaction = null, CancellationToken cancellationToken = default)
+        /// <returns>IEnumerable of dictionary, where key is column name</returns>
+        public static IEnumerable<IDictionary<string, object>> QueryAssoc(this DbConnection conn, string sql, object args = null, DbTransaction transaction = null)
+        {
+            DbCommand cmd = conn.Prepare(sql, transaction);
+            cmd.ApplyParameters(args);
+
+            using (var reader = cmd.ExecuteReader())
+            {
+                while (reader.Read())
+                {
+                    Dictionary<string, object> result = new Dictionary<string, object>();
+
+                    for (var i = 0; i < reader.FieldCount; i++)
+                    {
+                        result[reader.GetName(i)] = reader.GetValueWithNull(i);
+                    }
+
+                    yield return result;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Read data from database
+        /// </summary>
+        /// <param name="conn">A connection</param>
+        /// <param name="sql">SQL-statement to be executed</param>
+        /// <param name="args">Arguments to apply on SQL-statement</param>
+        /// <param name="transaction">Transaction to associate with the command</param>
+        /// <returns>IAsyncEnumerable of dictionary, where key is column name</returns>
+        public static async IAsyncEnumerable<IDictionary<string, object>> QueryAssocAsync(this DbConnection conn, string sql, object args = null, DbTransaction transaction = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
         {
             DbCommand cmd = await conn.PrepareAsync(sql, transaction, cancellationToken).ConfigureAwait(false);
             cmd.ApplyParameters(args);
-            var items = new List<IDictionary<string, object>>();
+
             using (var reader = await cmd.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false))
             {
-                List<string> columns = new List<string>();
-
-                for (int i = 0; i < reader.FieldCount; i++)
-                    columns.Add(reader.GetName(i));
-
                 while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
                 {
                     Dictionary<string, object> result = new Dictionary<string, object>();
 
                     for (var i = 0; i < reader.FieldCount; i++)
-                        result[columns[i]] = reader[i] is DBNull ? null : reader[i];
+                    {
+                        result[reader.GetName(i)] = reader.GetValueWithNull(i);
+                    }
 
-                    items.Add(result);
+                    yield return result;
                 }
             }
-            return items;
         }
 
         /// <summary>
@@ -459,8 +487,7 @@ namespace Denntah.Sql
         /// <returns>true when inserted, false when updated</returns>
         public static async Task<bool> UpsertAsync(this DbConnection conn, string table, object data, string pk, DbTransaction transaction = null, CancellationToken cancellationToken = default)
         {
-            var temp = await conn.UpsertAsync(table, new List<Object> { data }, pk, transaction, cancellationToken);
-            return temp.First();
+            return (await conn.UpsertAsync(table, new List<Object> { data }, pk, transaction, cancellationToken).ConfigureAwait(false)).FirstOrDefault();
         }
 
         /// <summary>
@@ -471,7 +498,7 @@ namespace Denntah.Sql
         /// <param name="dataList">List of objects containing the data</param>
         /// <param name="pk">Name of primary key field</param>
         /// <param name="transaction">Transaction to associate with the command</param>
-        /// <returns>List of true when inserted, false when updated</returns>
+        /// <returns>IEnumerable of true when inserted, false when updated</returns>
         public static IEnumerable<bool> Upsert(this DbConnection conn, string table, IEnumerable<object> dataList, string pk, DbTransaction transaction = null)
         {
             TypeDescriber td = TypeHandler.Get(dataList.First());
@@ -498,7 +525,7 @@ namespace Denntah.Sql
         /// <param name="dataList">List of objects containing the data</param>
         /// <param name="pk">Name of primary key field</param>
         /// <param name="transaction">Transaction to associate with the command</param>
-        /// <returns>List of true when inserted, false when updated</returns>
+        /// <returns>IEnumerable of true when inserted, false when updated</returns>
         public static async Task<IEnumerable<bool>> UpsertAsync(this DbConnection conn, string table, IEnumerable<object> dataList, string pk, DbTransaction transaction = null, CancellationToken cancellationToken = default)
         {
             TypeDescriber td = TypeHandler.Get(dataList.First());
@@ -514,7 +541,7 @@ namespace Denntah.Sql
             DbCommand cmd = await conn.PrepareAsync(sql, transaction, cancellationToken).ConfigureAwait(false);
             cmd.ApplyParameters(dataList);
 
-            return await conn.ScalarListAsync<bool>(cmd, cancellationToken).ConfigureAwait(false);
+            return await conn.ScalarListAsync<bool>(cmd, cancellationToken).ToListAsync().ConfigureAwait(false);
         }
 
         /// <summary>
@@ -635,14 +662,14 @@ namespace Denntah.Sql
         /// <typeparam name="T">type to read</typeparam>
         /// <param name="conn">A connection</param>
         /// <param name="cmd">Command to be executed</param>
-        /// <returns>List of T</returns>
+        /// <returns>IEnumerable of T</returns>
         public static IEnumerable<T> ScalarList<T>(this DbConnection conn, DbCommand cmd)
         {
             using (var reader = cmd.ExecuteReader())
             {
                 while (reader.Read())
                 {
-                    yield return (T)reader[0];
+                    yield return (T)reader.GetValueWithNull(0);
                 }
             }
         }
@@ -652,18 +679,16 @@ namespace Denntah.Sql
         /// <typeparam name="T">type to read</typeparam>
         /// <param name="conn">A connection</param>
         /// <param name="cmd">Command to be executed</param>
-        /// <returns>List of T</returns>
-        public static async Task<IEnumerable<T>> ScalarListAsync<T>(this DbConnection conn, DbCommand cmd, CancellationToken cancellationToken = default)
+        /// <returns>IAsyncEnumerable of T</returns>
+        public static async IAsyncEnumerable<T> ScalarListAsync<T>(this DbConnection conn, DbCommand cmd, [EnumeratorCancellation] CancellationToken cancellationToken = default)
         {
-            var items = new List<T>();
             using (var reader = await cmd.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false))
             {
                 while (await reader.ReadAsync().ConfigureAwait(false))
                 {
-                    items.Add((T)reader[0]);
+                    yield return (T)reader.GetValueWithNull(0);
                 }
             }
-            return items;
         }
 
         /// <summary>

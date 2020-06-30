@@ -51,7 +51,7 @@ namespace Denntah.Sql.Test
             _data.Make = "BMW M5";
             bool isInsert = await _db.UpsertAsync("cars", _data, "id").ConfigureAwait(false);
 
-            Car car = (await _db.QueryAsync<Car>("SELECT * FROM cars WHERE id=@Id", _data).ConfigureAwait(false)).FirstOrDefault();
+            Car car = (await _db.QueryAsync<Car>("SELECT * FROM cars WHERE id=@Id", _data).FirstOrDefaultAsync().ConfigureAwait(false));
 
             Assert.False(isInsert);
             Assert.Equal(_data.Make, car.Make);
@@ -134,7 +134,7 @@ namespace Denntah.Sql.Test
             _data.Make = "Lamborghini Aventador";
             int affected2 = await _db.InsertIfMissingAsync("cars", _data, "id").ConfigureAwait(false);
 
-            Car car = (await _db.QueryAsync<Car>("SELECT * FROM cars WHERE id=@Id", _data).ConfigureAwait(false)).FirstOrDefault();
+            Car car = (await _db.QueryAsync<Car>("SELECT * FROM cars WHERE id=@Id", _data).FirstOrDefaultAsync().ConfigureAwait(false));
 
             Assert.Equal(1, affected);
             Assert.Equal(0, affected2);

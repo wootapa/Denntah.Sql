@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Reflection;
-using System.Reflection.Emit;
 
 namespace Denntah.Sql.Reflection
 {
@@ -66,7 +65,7 @@ namespace Denntah.Sql.Reflection
         private Hashtable setters = new Hashtable();
         private Hashtable getters = new Hashtable();
 
-        public void SetValue<S, T>(string propertyName, S obj, T value)
+        public void SetValue(string propertyName, object obj, object value)
         {
             PropertyInfo prop = (PropertyInfo)_properties[propertyName];
 
@@ -75,11 +74,11 @@ namespace Denntah.Sql.Reflection
                 if (prop.PropertyType.IsEnum)
                     prop.SetValue(obj, Enum.Parse(prop.PropertyType, value.ToString()), null);
                 else
-                    prop.SetValue(obj, value, null);
+                    prop.SetValue(obj, value is DBNull ? null : value, null);
             }
         }
 
-        public object GetValue<S>(string propertyName, S obj)
+        public object GetValue(string propertyName, object obj)
         {
             PropertyInfo prop = (PropertyInfo)_properties[propertyName];
 

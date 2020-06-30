@@ -27,9 +27,13 @@ namespace Denntah.Sql
             PropertyDescriber[] keys = td.Keys.ToArray();
 
             if (keys.Length == 0)
+            {
                 throw new ArgumentException("T must be a type with properties decorated with KeyAttribute");
+            }
             else if (keys.Length != ids.Length)
+            {
                 throw new ArgumentException(string.Format("KeyAttribute-count ({0}) and argument-count ({1}) must match", keys.Length, ids.Length));
+            }
             else
             {
                 string where = string.Join(" AND ", keys.Select(x => x.DbName + "=@" + x.Property.Name));
@@ -37,7 +41,9 @@ namespace Denntah.Sql
 
                 DbCommand cmd = conn.Prepare(sql);
                 for (var i = 0; i < ids.Length; i++)
+                {
                     cmd.ApplyParameter(keys[i].Property.Name, ids[i]);
+                }
 
                 return conn.Query<T>(cmd).FirstOrDefault();
             }
@@ -71,9 +77,13 @@ namespace Denntah.Sql
             PropertyDescriber[] keys = td.Keys.ToArray();
 
             if (keys.Length == 0)
+            {
                 throw new ArgumentException("T must be a type with properties decorated with KeyAttribute");
+            }
             else if (keys.Length != ids.Length)
+            {
                 throw new ArgumentException(string.Format("KeyAttribute-count ({0}) and argument-count ({1}) must match", keys.Length, ids.Length));
+            }
             else
             {
                 string where = string.Join(",", keys.Select(x => x.DbName + "=@" + x.Property.Name));
@@ -81,9 +91,11 @@ namespace Denntah.Sql
 
                 DbCommand cmd = await conn.PrepareAsync(sql, cancellationToken: cancellationToken).ConfigureAwait(false);
                 for (var i = 0; i < ids.Length; i++)
+                {
                     cmd.ApplyParameter(keys[i].Property.Name, ids[i]);
+                }
 
-                return (await conn.QueryAsync<T>(cmd, cancellationToken).ConfigureAwait(false)).FirstOrDefault();
+                return (await conn.QueryAsync<T>(cmd, cancellationToken).FirstOrDefaultAsync().ConfigureAwait(false));
             }
         }
 
@@ -112,12 +124,16 @@ namespace Denntah.Sql
                 var result = conn.QueryAssoc(sql, data, transaction).FirstOrDefault();
 
                 foreach (var prop in generated)
+                {
                     td.SetValue(prop.Property.Name, data, result[prop.DbName]);
+                }
 
                 return 1;
             }
             else
+            {
                 return conn.Insert(td.Table, data, transaction);
+            }
         }
 
         /// <summary>
@@ -142,15 +158,19 @@ namespace Denntah.Sql
 
                 string sql = $"INSERT INTO {td.Table} ({columns}) VALUES ({values}) RETURNING {returns}";
 
-                var result = (await conn.QueryAssocAsync(sql, data, transaction, cancellationToken).ConfigureAwait(false)).FirstOrDefault();
+                var result = (await conn.QueryAssocAsync(sql, data, transaction, cancellationToken).FirstOrDefaultAsync().ConfigureAwait(false));
 
                 foreach (var prop in generated)
+                {
                     td.SetValue(prop.Property.Name, data, result[prop.DbName]);
+                }
 
                 return 1;
             }
             else
+            {
                 return await conn.InsertAsync(td.Table, data, transaction, cancellationToken).ConfigureAwait(false);
+            }
         }
 
         /// <summary>
@@ -232,7 +252,9 @@ namespace Denntah.Sql
                 return conn.InsertIfMissing(td.Table, dataList, string.Join(",", keys.Select(x => x.DbName)), transaction);
             }
             else
+            {
                 throw new ArgumentException("Invalid object. Atleast one property must be marked with KeyAttribute on type " + dataList.First().GetType().Name);
+            }
         }
 
         /// <summary>
@@ -254,7 +276,9 @@ namespace Denntah.Sql
                 return conn.InsertIfMissingAsync(td.Table, dataList, string.Join(",", keys.Select(x => x.DbName)), transaction, cancellationToken);
             }
             else
+            {
                 throw new ArgumentException("Invalid object. Atleast one property must be marked with KeyAttribute on type " + dataList.First().GetType().Name);
+            }
         }
 
         /// <summary>
@@ -282,7 +306,7 @@ namespace Denntah.Sql
         public static async Task<bool> UpsertAsync<T>(this DbConnection conn, T data, DbTransaction transaction = null, CancellationToken cancellationToken = default)
             where T : class
         {
-            return (await conn.UpsertAsync<T>(new List<T> { data }, transaction, cancellationToken).ConfigureAwait(false)).First();
+            return (await conn.UpsertAsync<T>(new List<T> { data }, transaction, cancellationToken).ConfigureAwait(false)).FirstOrDefault();
         }
 
         /// <summary>
@@ -292,7 +316,7 @@ namespace Denntah.Sql
         /// <param name="conn">A connection</param>
         /// <param name="dataList">List of objects containing the data</param>
         /// <param name="transaction">Transaction to associate with the command</param>
-        /// <returns>List of true when inserted, false when updated</returns>
+        /// <returns>IEnumerable of true when inserted, false when updated</returns>
         public static IEnumerable<bool> Upsert<T>(this DbConnection conn, IEnumerable<T> dataList, DbTransaction transaction = null)
             where T : class
         {
@@ -304,7 +328,9 @@ namespace Denntah.Sql
                 return conn.Upsert(td.Table, dataList, string.Join(",", keys.Select(x => x.DbName)), transaction);
             }
             else
+            {
                 throw new ArgumentException("Invalid object. Atleast one property must be marked with KeyAttribute on type " + dataList.First().GetType().Name);
+            }
         }
 
         /// <summary>
@@ -314,7 +340,7 @@ namespace Denntah.Sql
         /// <param name="conn">A connection</param>
         /// <param name="dataList">List of objects containing the data</param>
         /// <param name="transaction">Transaction to associate with the command</param>
-        /// <returns>List of true when inserted, false when updated</returns>
+        /// <returns>IEnumerable of true when inserted, false when updated</returns>
         public static Task<IEnumerable<bool>> UpsertAsync<T>(this DbConnection conn, IEnumerable<T> dataList, DbTransaction transaction = null, CancellationToken cancellationToken = default)
             where T : class
         {
@@ -326,7 +352,9 @@ namespace Denntah.Sql
                 return conn.UpsertAsync(td.Table, dataList, string.Join(",", keys.Select(x => x.DbName)), transaction, cancellationToken);
             }
             else
+            {
                 throw new ArgumentException("Invalid object. Atleast one property must be marked with KeyAttribute on type " + dataList.First().GetType().Name);
+            }
         }
 
         /// <summary>
