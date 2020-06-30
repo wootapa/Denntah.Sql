@@ -42,6 +42,7 @@ namespace Denntah.Sql
         /// <param name="conn">A connection</param>
         /// <param name="sql">SQL-command to be executed</param>
         /// <param name="transaction">Transaction to associate with the command</param>
+        /// <param name="cancellationToken">Cancellationtoken</param>
         /// <returns>The created command</returns>
         public static async Task<DbCommand> PrepareAsync(this DbConnection conn, string sql, DbTransaction transaction = null, CancellationToken cancellationToken = default)
         {
@@ -82,6 +83,7 @@ namespace Denntah.Sql
         /// <param name="sql">SQL-statement to be executed</param>
         /// <param name="args">Arguments to apply on SQL-statement</param>
         /// <param name="transaction">Transaction to associate with the command</param>
+        /// <param name="cancellationToken">Cancellationtoken</param>
         /// <returns>IAsyncEnumerable of T</returns>
         public static async IAsyncEnumerable<T> QueryAsync<T>(this DbConnection conn, string sql, object args = null, DbTransaction transaction = null, [EnumeratorCancellation] CancellationToken cancellationToken = default) where T : new()
         {
@@ -127,6 +129,7 @@ namespace Denntah.Sql
         /// <typeparam name="T">class to map data to</typeparam>
         /// <param name="conn">A connection</param>
         /// <param name="cmd">Command to be executed</param>
+        /// <param name="cancellationToken">Cancellationtoken</param>
         /// <returns>IAsyncEnumerable of T</returns>
         public static async IAsyncEnumerable<T> QueryAsync<T>(this DbConnection conn, DbCommand cmd, [EnumeratorCancellation] CancellationToken cancellationToken = default) where T : new()
         {
@@ -184,6 +187,7 @@ namespace Denntah.Sql
         /// <param name="sql">SQL-statement to be executed</param>
         /// <param name="args">Arguments to apply on SQL-statement</param>
         /// <param name="transaction">Transaction to associate with the command</param>
+        /// <param name="cancellationToken">Cancellationtoken</param>
         /// <returns>IAsyncEnumerable of array of object</returns>
         public static async IAsyncEnumerable<object[]> QueryArrayAsync(this DbConnection conn, string sql, object args = null, DbTransaction transaction = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
         {
@@ -242,6 +246,7 @@ namespace Denntah.Sql
         /// <param name="sql">SQL-statement to be executed</param>
         /// <param name="args">Arguments to apply on SQL-statement</param>
         /// <param name="transaction">Transaction to associate with the command</param>
+        /// <param name="cancellationToken">Cancellationtoken</param>
         /// <returns>IAsyncEnumerable of dictionary, where key is column name</returns>
         public static async IAsyncEnumerable<IDictionary<string, object>> QueryAssocAsync(this DbConnection conn, string sql, object args = null, DbTransaction transaction = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
         {
@@ -284,6 +289,7 @@ namespace Denntah.Sql
         /// <param name="table">Name of table to insert into</param>
         /// <param name="data">Object containing the data</param>
         /// <param name="transaction">Transaction to associate with the command</param>
+        /// <param name="cancellationToken">Cancellationtoken</param>
         /// <returns>Rows affected</returns>
         public static Task<int> InsertAsync(this DbConnection conn, string table, object data, DbTransaction transaction = null, CancellationToken cancellationToken = default)
         {
@@ -320,6 +326,7 @@ namespace Denntah.Sql
         /// <param name="table">Name of table to insert into</param>
         /// <param name="dataList">List of objects containing the data</param>
         /// <param name="transaction">Transaction to associate with the command</param>
+        /// <param name="cancellationToken">Cancellationtoken</param>
         /// <returns>Rows affected</returns>
         public static async Task<int> InsertAsync(this DbConnection conn, string table, IEnumerable<object> dataList, DbTransaction transaction = null, CancellationToken cancellationToken = default)
         {
@@ -368,6 +375,7 @@ namespace Denntah.Sql
         /// <param name="data">Object containing the data</param>
         /// <param name="pk">Name of primary key field</param>
         /// <param name="transaction">Transaction to associate with the command</param>
+        /// <param name="cancellationToken">Cancellationtoken</param>
         /// <returns>value of generated id</returns>
         public static Task<Tid> InsertAsync<Tid>(this DbConnection conn, string table, object data, string pk, DbTransaction transaction = null, CancellationToken cancellationToken = default)
             where Tid : struct
@@ -404,6 +412,7 @@ namespace Denntah.Sql
         /// <param name="data">Object containing the data</param>
         /// <param name="pk">Name of primary key field</param>
         /// <param name="transaction">Transaction to associate with the command</param>
+        /// <param name="cancellationToken">Cancellationtoken</param>
         /// <returns>Rows affected</returns>
         public static Task<int> InsertIfMissingAsync(this DbConnection conn, string table, object data, string pk, DbTransaction transaction = null, CancellationToken cancellationToken = default)
         {
@@ -444,6 +453,7 @@ namespace Denntah.Sql
         /// <param name="dataList">List of objects containing the data</param>
         /// <param name="pk">Name of primary key field</param>
         /// <param name="transaction">Transaction to associate with the command</param>
+        /// <param name="cancellationToken">Cancellationtoken</param>
         /// <returns>Rows affected</returns>
         public static async Task<int> InsertIfMissingAsync(this DbConnection conn, string table, IEnumerable<object> dataList, string pk, DbTransaction transaction = null, CancellationToken cancellationToken = default)
         {
@@ -484,6 +494,7 @@ namespace Denntah.Sql
         /// <param name="data">Object containing the data</param>
         /// <param name="pk">Name of primary key field</param>
         /// <param name="transaction">Transaction to associate with the command</param>
+        /// <param name="cancellationToken">Cancellationtoken</param>
         /// <returns>true when inserted, false when updated</returns>
         public static async Task<bool> UpsertAsync(this DbConnection conn, string table, object data, string pk, DbTransaction transaction = null, CancellationToken cancellationToken = default)
         {
@@ -525,6 +536,7 @@ namespace Denntah.Sql
         /// <param name="dataList">List of objects containing the data</param>
         /// <param name="pk">Name of primary key field</param>
         /// <param name="transaction">Transaction to associate with the command</param>
+        /// <param name="cancellationToken">Cancellationtoken</param>
         /// <returns>IEnumerable of true when inserted, false when updated</returns>
         public static async Task<IEnumerable<bool>> UpsertAsync(this DbConnection conn, string table, IEnumerable<object> dataList, string pk, DbTransaction transaction = null, CancellationToken cancellationToken = default)
         {
@@ -578,6 +590,7 @@ namespace Denntah.Sql
         /// <param name="where">Where clause e.g. "id=@id"</param>
         /// <param name="args">Additional arguments to apply other then data e.g. new { id = 1 }</param>
         /// <param name="transaction">Transaction to associate with the command</param>
+        /// <param name="cancellationToken">Cancellationtoken</param>
         /// <returns>Rows affected</returns>
         public static async Task<int> UpdateAsync(this DbConnection conn, string table, object data, string where, object args = null, DbTransaction transaction = null, CancellationToken cancellationToken = default)
         {
@@ -616,6 +629,7 @@ namespace Denntah.Sql
         /// <param name="where">Where clause e.g. "id=@id"</param>
         /// <param name="args">Arguments to apply e.g. new { id = 1 }</param>
         /// <param name="transaction">Transaction to associate with the command</param>
+        /// <param name="cancellationToken">Cancellationtoken</param>
         /// <returns>Rows affected</returns>
         public static Task<int> DeleteAsync(this DbConnection conn, string table, string where, object args = null, DbTransaction transaction = null, CancellationToken cancellationToken = default)
         {
@@ -647,6 +661,7 @@ namespace Denntah.Sql
         /// <param name="sql">SQL-statement to be executed</param>
         /// <param name="data">Arguments to apply on SQL-statement</param>
         /// <param name="transaction">Transaction to associate with the command</param>
+        /// <param name="cancellationToken">Cancellationtoken</param>
         /// <returns>First value of first row as T</returns>
         public static async Task<T> ScalarAsync<T>(this DbConnection conn, string sql, object data = null, DbTransaction transaction = null, CancellationToken cancellationToken = default)
         {
@@ -679,6 +694,7 @@ namespace Denntah.Sql
         /// <typeparam name="T">type to read</typeparam>
         /// <param name="conn">A connection</param>
         /// <param name="cmd">Command to be executed</param>
+        /// <param name="cancellationToken">Cancellationtoken</param>
         /// <returns>IAsyncEnumerable of T</returns>
         public static async IAsyncEnumerable<T> ScalarListAsync<T>(this DbConnection conn, DbCommand cmd, [EnumeratorCancellation] CancellationToken cancellationToken = default)
         {
@@ -697,6 +713,7 @@ namespace Denntah.Sql
         /// <param name="conn">A connection</param>
         /// <param name="sql">SQL-statement to be executed</param>
         /// <param name="data">Arguments to apply on SQL-statement</param>
+        /// <param name="transaction">Transaction to associate with the command</param>
         /// <returns>Rows affected</returns>
         public static int Execute(this DbConnection conn, string sql, object data = null, DbTransaction transaction = null)
         {
@@ -712,6 +729,8 @@ namespace Denntah.Sql
         /// <param name="conn">A connection</param>
         /// <param name="sql">SQL-statement to be executed</param>
         /// <param name="data">Arguments to apply on SQL-statement</param>
+        /// <param name="transaction">Transaction to associate with the command</param>
+        /// <param name="cancellationToken">Cancellationtoken</param>
         /// <returns>Rows affected</returns>
         public static async Task<int> ExecuteAsync(this DbConnection conn, string sql, object data = null, DbTransaction transaction = null, CancellationToken cancellationToken = default)
         {

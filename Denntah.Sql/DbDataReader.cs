@@ -12,6 +12,7 @@ namespace Denntah.Sql
         /// Returns value at column index. 
         /// If value is DBNull then null is returned.
         /// </summary>
+        /// <param name="reader">The reader</param>
         /// <param name="ordinal">Column index</param>
         /// <returns></returns>
         public static object GetValueWithNull(this DbDataReader reader, int ordinal)
